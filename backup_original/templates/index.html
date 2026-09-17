@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Operacional de Escala & Frota Pesada</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-truck-fast brand-icon"></i>
+                <div class="brand-text">
+                    <h2>EscalaPro</h2>
+                    <span>Central Operacional</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Painel & Indicadores
+                </button>
+                <button class="nav-btn" data-tab="escalas">
+                    <i class="fa-solid fa-route"></i> Rota ativas
+                </button>
+                <button class="nav-btn" data-tab="colaboradores">
+                    <i class="fa-solid fa-users"></i> Colaboradores
+                </button>
+                <button class="nav-btn" data-tab="frota">
+                    <i class="fa-solid fa-truck"></i> Frota Pesada
+                </button>
+                <button class="nav-btn" data-tab="rotas">
+                    <i class="fa-solid fa-map-location-dot"></i> Rotas
+                </button>
+                <button class="nav-btn" data-tab="afastamentos">
+                    <i class="fa-solid fa-user-slash"></i> Afastamentos
+                </button>
+                <button class="nav-btn" data-tab="historico">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Histórico & Auditoria
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span>Sistema Operacional</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="page-title">Painel & Indicadores</h1>
+                    <p id="page-subtitle">Visão geral em tempo real da operação de frota e escalas</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="abrirModalImportarExcel()">
+                        <i class="fa-solid fa-file-excel"></i> Importar Excel
+                    </button>
+                    <button class="btn btn-primary" onclick="abrirModalNovaEscala()">
+                        <i class="fa-solid fa-plus"></i> Nova Escala
+                    </button>
+                    <button class="btn btn-secondary" onclick="recarregarDadosAtuais()">
+                        <i class="fa-solid fa-rotate-right"></i> Atualizar
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==================== ABA 1: DASHBOARD ==================== -->
+            <section id="tab-dashboard" class="tab-content active">
+                <div class="kpi-grid">
+                    <div class="kpi-card purple">
+                        <div class="kpi-icon"><i class="fa-solid fa-truck-moving"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Escalas em Rota</span>
+                            <h3 id="kpi-escalas-em-rota">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card green">
+                        <div class="kpi-icon"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Motoristas Disponíveis</span>
+                            <h3 id="kpi-motoristas-disponiveis">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card blue">
+                        <div class="kpi-icon"><i class="fa-solid fa-users-gear"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Ajudantes Disponíveis</span>
+                            <h3 id="kpi-ajudantes-disponiveis">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card orange">
+                        <div class="kpi-icon"><i class="fa-solid fa-user-nurse"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Colaboradores Afastados</span>
+                            <h3 id="kpi-colaboradores-afastados">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card teal">
+                        <div class="kpi-icon"><i class="fa-solid fa-business-time"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Taxa de Pontualidade</span>
+                            <h3 id="kpi-pontualidade">100%</h3>
+                        </div>
+                    </div>
+                    <!-- NOVOS KPIs -->
+                    <div class="kpi-card kpi-frotas">
+                        <div class="kpi-icon"><i class="fa-solid fa-truck"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Frotas Disponíveis</span>
+                            <h3 id="kpi-frotas-disponiveis">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-reserva">
+                        <div class="kpi-icon"><i class="fa-solid fa-user-shield"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Colaboradores Reserva</span>
+                            <h3 id="kpi-reservas">0</h3>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-transbordo">
+                        <div class="kpi-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">Transbordos Ativos</span>
+                            <h3 id="kpi-transbordos">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-panels">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-trophy"></i> Top Motoristas em Viagens</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul id="list-top-motoristas" class="rank-list">
+                                <li class="empty">Carregando indicadores...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-route"></i> Rotas Mais Frequentes</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul id="list-top-rotas" class="rank-list">
+                                <li class="empty">Carregando indicadores...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- NOVO PAINEL: FROTAS DISPONÍVEIS -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-truck"></i> Frotas Disponíveis</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul id="list-frotas-disponiveis" class="rank-list">
+                                <li class="empty">Carregando...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 2: ESCALAS ==================== -->
+            <section id="tab-escalas" class="tab-content">
+                <div class="sub-nav-bar">
+                    <button class="sub-nav-btn active" data-subtab-escala="escalas-lista" onclick="mudarSubAbaEscalas('escalas-lista')">
+                        <i class="fa-solid fa-list-check"></i> Escalas Registradas & Ativas
+                    </button>
+                    <button class="sub-nav-btn" data-subtab-escala="escalas-importar" onclick="mudarSubAbaEscalas('escalas-importar')">
+                        <i class="fa-solid fa-file-excel"></i> Alteração em Massa (Importar Excel)
+                    </button>
+                </div>
+
+                <div id="subtab-escalas-lista" class="subtab-content active">
+    <div class="table-card">
+        <div class="card-header escalas-header">
+            <div class="filter-tabs" id="filtro-escalas-tabs">
+                <button class="filter-tab active" data-filtro="ativas" onclick="setFiltroEscalas('ativas')">
+                    <i class="fa-solid fa-truck-moving"></i> Ativas
+                </button>
+                <button class="filter-tab" data-filtro="concluidas" onclick="setFiltroEscalas('concluidas')">
+                    <i class="fa-solid fa-circle-check"></i> Concluídas
+                </button>
+                <button class="filter-tab" data-filtro="todas" onclick="setFiltroEscalas('todas')">
+                    <i class="fa-solid fa-list"></i> Todas
+                </button>
+            </div>
+            <div class="filter-box">
+                <input type="text" id="busca-escalas" placeholder="Buscar por motorista, frota ou rota..." onkeyup="filtrarTabela('tabela-escalas', this.value)">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="tabela-escalas">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Motorista</th>
+                        <th>Ajudante</th>
+                        <th>Frota / Placa</th>
+                        <th>Rota</th>
+                        <th>Data Saída</th>
+                        <th>Data Chegada</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="9" class="text-center">Carregando escalas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+                <div id="subtab-escalas-importar" class="subtab-content">
+                    <div class="grid-2col">
+                        <div class="form-card">
+                            <h3><i class="fa-solid fa-file-excel"></i> Importar Nova Planilha de Escalas</h3>
+                            <form id="form-importar-excel-page" onsubmit="confirmarImportacaoExcelPage(event)">
+                                <div class="form-group">
+                                    <label for="excel-arquivo-page">Selecione a Planilha (.xlsx, .xls ou .csv) *</label>
+                                    <input type="file" id="excel-arquivo-page" accept=".xlsx, .xls, .csv" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="excel-motivo-page">Motivo do Afastamento (se Ajudante for retirado) *</label>
+                                    <select id="excel-motivo-page" required>
+                                        <option value="Demanda interna">Demanda interna</option>
+                                        <option value="Folga">Folga</option>
+                                        <option value="Falta">Falta</option>
+                                        <option value="Licença médica">Licença médica</option>
+                                    </select>
+                                </div>
+                                <button type="submit" id="btn-importar-page-submit" class="btn btn-success btn-block">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Processar Alteração em Massa
+                                </button>
+                            </form>
+                            <div id="import-resultado-page" class="import-result-panel margin-top-1" style="display: none;"></div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-circle-info"></i> Como Funciona a Alteração em Massa?</h3>
+                            </div>
+                            <div class="panel-body">
+                                <ul class="rank-list">
+                                    <li class="rank-item">
+                                        <div class="rank-info">
+                                            <i class="fa-solid fa-arrows-rotate" style="color: var(--accent-purple);"></i>
+                                            <div>
+                                                <strong>Substituição de Escalas Ativas:</strong>
+                                                <p style="font-size: 0.82rem; color: var(--text-muted);">Viagens ativas para o mesmo veículo ou motorista são encerradas como <code>substituido</code> e uma nova escala é gerada.</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="rank-item">
+                                        <div class="rank-info">
+                                            <i class="fa-solid fa-arrows-left-right" style="color: var(--accent-teal);"></i>
+                                            <div>
+                                                <strong>Transbordo Automático:</strong>
+                                                <p style="font-size: 0.82rem; color: var(--text-muted);">Se o mesmo motorista e frota aparecem com <strong>rotas diferentes</strong>, o sistema mantém ambas as escalas ativas (transbordo).</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="rank-item">
+                                        <div class="rank-info">
+                                            <i class="fa-solid fa-user-slash" style="color: var(--accent-orange);"></i>
+                                            <div>
+                                                <strong>Retirada de Ajudante:</strong>
+                                                <p style="font-size: 0.82rem; color: var(--text-muted);">Se uma escala ativa possuía ajudante e a nova planilha vier sem ajudante, o ajudante anterior é marcado como <code>afastado</code>.</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="rank-item">
+                                        <div class="rank-info">
+                                            <i class="fa-solid fa-user-plus" style="color: var(--accent-green);"></i>
+                                            <div>
+                                                <strong>Cadastro Automático:</strong>
+                                                <p style="font-size: 0.82rem; color: var(--text-muted);">Motoristas, ajudantes, veículos ou rotas não cadastrados previamente serão inseridos automaticamente.</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 3: COLABORADORES ==================== -->
+            <section id="tab-colaboradores" class="tab-content">
+                <div class="sub-nav-bar">
+                    <button class="sub-nav-btn active" data-subtab="colab-lista" onclick="mudarSubAbaColaborador('colab-lista')">
+                        <i class="fa-solid fa-users-viewfinder"></i> Cadastros & Lista Geral
+                    </button>
+                    <button class="sub-nav-btn" data-subtab="colab-reservas" onclick="mudarSubAbaColaborador('colab-reservas')">
+                        <i class="fa-solid fa-user-shield"></i> Reservas
+                    </button>
+                    <button class="sub-nav-btn" data-subtab="colab-historico" onclick="mudarSubAbaColaborador('colab-historico')">
+                        <i class="fa-solid fa-user-clock"></i> Histórico Individual
+                    </button>
+                </div>
+
+                <!-- SUB-ABA 1: LISTA GERAL -->
+                <div id="subtab-colab-lista" class="subtab-content active">
+                    <div class="grid-2col">
+                        <div class="form-card">
+                            <h3><i class="fa-solid fa-user-plus"></i> Cadastrar Colaborador</h3>
+                            <form id="form-colaborador" onsubmit="salvarColaborador(event)">
+                                <div class="form-group">
+                                    <label for="colab-nome">Nome Completo *</label>
+                                    <input type="text" id="colab-nome" required placeholder="Ex: Carlos Silva">
+                                </div>
+                                <div class="form-group">
+                                    <label for="colab-funcao">Função *</label>
+                                    <select id="colab-funcao" required>
+                                        <option value="motorista">Motorista</option>
+                                        <option value="ajudante">Ajudante</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Salvar Colaborador</button>
+                            </form>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="card-header">
+                                <h2>Lista de Colaboradores</h2>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tabela-colaboradores">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>Função</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="5" class="text-center">Carregando colaboradores...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA 2: RESERVAS -->
+                <div id="subtab-colab-reservas" class="subtab-content">
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-user-shield"></i> Colaboradores em Reserva</h2>
+                            <span id="total-reservas" class="badge badge-reserva">0 reserva(s)</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabela-reservas">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Função</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" class="text-center">Carregando reservas...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA 3: HISTÓRICO INDIVIDUAL -->
+                <div id="subtab-colab-historico" class="subtab-content">
+                    <div class="panel style-panel-select">
+                        <div class="form-group margin-0">
+                            <label for="select-historico-colaborador"><strong><i class="fa-solid fa-user-gear"></i> Selecione o Colaborador para consultar o Histórico:</strong></label>
+                            <select id="select-historico-colaborador" onchange="carregarHistoricoColaborador(this.value)">
+                                <option value="">Selecione o colaborador...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="card-perfil-colaborador" class="kpi-grid margin-top-1" style="display: none;">
+                        <div class="kpi-card purple">
+                            <div class="kpi-icon"><i class="fa-solid fa-user"></i></div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Nome & Função</span>
+                                <h3 id="perfil-nome-funcao" style="font-size: 1.1rem;">-</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card blue">
+                            <div class="kpi-icon"><i class="fa-solid fa-route"></i></div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Total de Viagens/Escalas</span>
+                                <h3 id="perfil-total-viagens">0</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card orange">
+                            <div class="kpi-icon"><i class="fa-solid fa-user-slash"></i></div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Afastamentos Registrados</span>
+                                <h3 id="perfil-total-afastamentos">0</h3>
+                            </div>
+                        </div>
+                        <div class="kpi-card green">
+                            <div class="kpi-icon"><i class="fa-solid fa-signal"></i></div>
+                            <div class="kpi-data">
+                                <span class="kpi-label">Status Atual</span>
+                                <h3 id="perfil-status-atual" style="font-size: 1.1rem;">-</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="detalhes-historico-colaborador" class="dashboard-panels margin-top-1" style="display: none;">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-truck-ramp-box"></i> Rotas / Viagens Realizadas</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table id="tabela-historico-escalas">
+                                        <thead>
+                                            <tr>
+                                                <th>Escala ID</th>
+                                                <th>Papel Exercido</th>
+                                                <th>Rota</th>
+                                                <th>Frota / Placa</th>
+                                                <th>Data Saída</th>
+                                                <th>Data Chegada</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="7" class="text-center">Selecione um colaborador acima.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-calendar-xmark"></i> Histórico de Afastamentos</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="table-responsive">
+                                    <table id="tabela-historico-afastamentos">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Motivo do Afastamento</th>
+                                                <th>Data Início</th>
+                                                <th>Previsão Fim</th>
+                                                <th>Data Retorno</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="5" class="text-center">Selecione um colaborador acima.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 4: FROTA ==================== -->
+            <section id="tab-frota" class="tab-content">
+                <!-- SUB-MENU FROTA -->
+                <div class="sub-nav-bar">
+                    <button class="sub-nav-btn active" data-subtab-frota="frota-cadastro" onclick="mudarSubAbaFrota('frota-cadastro')">
+                        <i class="fa-solid fa-truck-front"></i> Cadastro & Lista
+                    </button>
+                    <button class="sub-nav-btn" data-subtab-frota="frota-historico" onclick="mudarSubAbaFrota('frota-historico')">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Histórico de Frota
+                    </button>
+                </div>
+
+                <!-- SUB-ABA: CADASTRO -->
+                <div id="subtab-frota-cadastro" class="subtab-content active">
+                    <div class="grid-2col">
+                        <div class="form-card">
+                            <h3><i class="fa-solid fa-truck-front"></i> Cadastrar Novo Veículo</h3>
+                            <form id="form-frota" onsubmit="salvarFrota(event)">
+                                <div class="form-group">
+                                    <label for="frota-numero">Número da Frota *</label>
+                                    <input type="text" id="frota-numero" required placeholder="Ex: 140">
+                                </div>
+                                <div class="form-group">
+                                    <label for="frota-placa">Placa do Veículo *</label>
+                                    <input type="text" id="frota-placa" required placeholder="Ex: ABC1D23">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Salvar Veículo</button>
+                            </form>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="card-header">
+                                <h2>Frota de Veículos</h2>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tabela-frota">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nº Frota</th>
+                                            <th>Placa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="3" class="text-center">Carregando frota...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-ABA: HISTÓRICO DE FROTA -->
+                <div id="subtab-frota-historico" class="subtab-content">
+                    <div class="panel style-panel-select">
+                        <div class="filtros-historico-frota">
+                            <div class="form-group margin-0 flex-1">
+                                <label><strong><i class="fa-solid fa-truck"></i> Selecione a Frota:</strong></label>
+                                <select id="select-frota-historico">
+                                    <option value="">Selecione uma frota...</option>
+                                </select>
+                            </div>
+                            <div class="form-group margin-0">
+                                <label>Data Início</label>
+                                <input type="date" id="frota-hist-data-inicio">
+                            </div>
+                            <div class="form-group margin-0">
+                                <label>Data Fim</label>
+                                <input type="date" id="frota-hist-data-fim">
+                            </div>
+                            <button class="btn btn-primary" onclick="buscarHistoricoFrota()">
+                                <i class="fa-solid fa-search"></i> Buscar
+                            </button>
+                            <button class="btn btn-secondary" onclick="limparHistoricoFrota()">Limpar</button>
+                        </div>
+                    </div>
+
+                    <div id="frota-historico-resultado" style="display: none;" class="margin-top-1">
+                        <div class="kpi-grid kpi-grid-compact" id="frota-hist-info"></div>
+
+                        <div class="table-card">
+                            <div class="card-header">
+                                <h2 id="frota-hist-titulo">Últimos 3 registros</h2>
+                                <span id="frota-hist-total" class="badge badge-em_rota"></span>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="tabela-frota-historico">
+                                    <thead>
+                                        <tr>
+                                            <th>Data Saída</th>
+                                            <th>Data Chegada</th>
+                                            <th>Motorista</th>
+                                            <th>Ajudante</th>
+                                            <th>Rota</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 5: ROTAS ==================== -->
+            <section id="tab-rotas" class="tab-content">
+                <div class="grid-2col">
+                    <div class="form-card">
+                        <h3><i class="fa-solid fa-map-pin"></i> Cadastrar Nova Rota</h3>
+                        <form id="form-rota" onsubmit="salvarRota(event)">
+                            <div class="form-group">
+                                <label for="rota-nome">Nome da Rota *</label>
+                                <input type="text" id="rota-nome" required placeholder="Ex: Rota Rio de Janeiro">
+                            </div>
+                            <div class="form-group">
+                                <label for="rota-duracao">Duração Média Prevista (Dias)</label>
+                                <input type="number" id="rota-duracao" min="1" placeholder="Ex: 4">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Salvar Rota</button>
+                        </form>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h2>Rotas Operacionais</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabela-rotas">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome da Rota</th>
+                                        <th>Duração Estimada</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="3" class="text-center">Carregando rotas...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 6: AFASTAMENTOS ==================== -->
+            <section id="tab-afastamentos" class="tab-content">
+                <div class="grid-2col">
+                    <div class="form-card">
+                        <h3><i class="fa-solid fa-user-slash"></i> Registrar Afastamento</h3>
+                        <form id="form-afastamento" onsubmit="salvarAfastamento(event)">
+                            <div class="form-group">
+                                <label for="afast-colaborador">Colaborador *</label>
+                                <select id="afast-colaborador" required>
+                                    <option value="">Selecione o colaborador...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="afast-motivo">Motivo do Afastamento *</label>
+                                <select id="afast-motivo" required>
+                                    <option value="">Selecione o motivo...</option>
+                                    <option value="Folga">Folga</option>
+                                    <option value="Falta">Falta</option>
+                                    <option value="Licença médica">Licença médica</option>
+                                    <option value="Demanda interna">Demanda interna</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="afast-inicio">Data Início *</label>
+                                <input type="date" id="afast-inicio" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="afast-fim">Data Fim Prevista</label>
+                                <input type="date" id="afast-fim">
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-block">Confirmar Afastamento</button>
+                        </form>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h2>Afastamentos Ativos</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="tabela-afastamentos">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Colaborador</th>
+                                        <th>Função</th>
+                                        <th>Motivo</th>
+                                        <th>Data Início</th>
+                                        <th>Previsão Fim</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="7" class="text-center">Carregando afastamentos...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== ABA 7: HISTÓRICO ==================== -->
+            <section id="tab-historico" class="tab-content">
+                <div class="table-card">
+                    <div class="card-header">
+                        <h2>Trilha de Auditoria e Alterações</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tabela-historico">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tipo de Alteração</th>
+                                    <th>Escala Afetada</th>
+                                    <th>Descrição Detalhada</th>
+                                    <th>Data / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="text-center">Carregando histórico...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAIS -->
+    <div id="modal-escala" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-plus-circle"></i> Criar Nova Escala de Viagem</h3>
+                <button class="modal-close" onclick="fecharModal('modal-escala')">&times;</button>
+            </div>
+            <form id="form-nova-escala" onsubmit="salvarNovaEscala(event)">
+                <div class="form-group">
+                    <label for="escala-motorista">Motorista (Disponíveis) *</label>
+                    <select id="escala-motorista" required><option value="">Selecione o motorista...</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="escala-ajudante">Ajudante (Opcional)</label>
+                    <select id="escala-ajudante"><option value="">Nenhum ajudante</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="escala-frota">Veículo da Frota *</label>
+                    <select id="escala-frota" required><option value="">Selecione o veículo...</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="escala-rota">Rota de Destino *</label>
+                    <select id="escala-rota" required><option value="">Selecione a rota...</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="escala-saida">Data de Saída *</label>
+                    <input type="date" id="escala-saida" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-escala')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Lançar Escala</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-troca" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-troca-titulo"><i class="fa-solid fa-repeat"></i> Substituição na Escala</h3>
+                <button class="modal-close" onclick="fecharModal('modal-troca')">&times;</button>
+            </div>
+            <form id="form-troca" onsubmit="confirmarTrocaEscala(event)">
+                <input type="hidden" id="troca-escala-id">
+                <input type="hidden" id="troca-tipo">
+                <div class="form-group" id="group-troca-select">
+                    <label id="label-troca-select" for="troca-novo-id">Substituto *</label>
+                    <select id="troca-novo-id" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="troca-data">Data da Substituição *</label>
+                    <input type="date" id="troca-data" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-troca')">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Confirmar Substituição</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-chegada" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-flag-checkered"></i> Registrar Chegada da Viagem</h3>
+                <button class="modal-close" onclick="fecharModal('modal-chegada')">&times;</button>
+            </div>
+            <form id="form-chegada" onsubmit="confirmarChegada(event)">
+                <input type="hidden" id="chegada-escala-id">
+                <div class="form-group">
+                    <label for="chegada-data">Data Efetiva de Chegada *</label>
+                    <input type="date" id="chegada-data" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-chegada')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Concluir Viagem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-retorno" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-check"></i> Registrar Retorno de Afastamento</h3>
+                <button class="modal-close" onclick="fecharModal('modal-retorno')">&times;</button>
+            </div>
+            <form id="form-retorno" onsubmit="confirmarRetornoAfastamento(event)">
+                <input type="hidden" id="retorno-afastamento-id">
+                <input type="hidden" id="retorno-colaborador-id">
+                <div class="form-group">
+                    <label for="retorno-data">Data de Retorno ao Trabalho *</label>
+                    <input type="date" id="retorno-data" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-retorno')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar Retorno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-importar-excel" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-excel"></i> Importar Escalas via Excel</h3>
+                <button class="modal-close" onclick="fecharModal('modal-importar-excel')">&times;</button>
+            </div>
+            <form id="form-importar-excel" onsubmit="confirmarImportacaoExcel(event)">
+                <div class="form-group">
+                    <label for="excel-arquivo">Selecione a Planilha (.xlsx, .xls ou .csv) *</label>
+                    <input type="file" id="excel-arquivo" accept=".xlsx, .xls, .csv" required>
+                </div>
+                <div class="form-group">
+                    <label for="excel-motivo">Motivo do Afastamento (se Ajudante for retirado)</label>
+                    <select id="excel-motivo">
+                        <option value="Demanda interna">Demanda interna</option>
+                        <option value="Folga">Folga</option>
+                        <option value="Falta">Falta</option>
+                        <option value="Licença médica">Licença médica</option>
+                    </select>
+                </div>
+                <div id="import-resultado" class="import-result-panel" style="display: none;"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-importar-excel')">Fechar</button>
+                    <button type="submit" id="btn-importar-submit" class="btn btn-success">Processar Importação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

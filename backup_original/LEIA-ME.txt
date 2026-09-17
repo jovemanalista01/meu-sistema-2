@@ -1,0 +1,43 @@
+LOGISCALE - COMO USAR
+=====================
+
+Este sistema abre sozinho no seu navegador (Chrome, Edge, etc.) quando
+você o inicia. Você tem duas opções abaixo — escolha uma.
+
+------------------------------------------------------------
+OPÇÃO 1 (mais rápida) — Abrir agora, sem gerar .exe
+------------------------------------------------------------
+1. Dê 2 cliques em: iniciar_agora.bat
+2. Na primeira vez, ele vai instalar tudo sozinho (pode levar 1-2 min).
+3. O navegador abre automaticamente com o LogiScale rodando.
+4. Para fechar o sistema, feche a janela preta que abriu.
+
+Pré-requisito: ter o Python instalado (https://www.python.org/downloads/,
+marque "Add Python to PATH" na instalação).
+
+------------------------------------------------------------
+OPÇÃO 2 — Gerar um LogiScale.exe de verdade
+------------------------------------------------------------
+Um .exe "de verdade" (que roda em qualquer PC Windows sem precisar de
+Python instalado nele) só pode ser gerado DENTRO do Windows — não é
+possível criar esse .exe fora do Windows. Por isso, gere-o você mesmo
+com um clique:
+
+1. Dê 2 cliques em: build_exe.bat
+   (isso baixa e usa o Python que já está no seu PC para compilar)
+2. Aguarde a compilação terminar (alguns minutos).
+3. O arquivo pronto fica em: dist\LogiScale.exe
+4. Copie a pasta "dist" inteira (ou só o LogiScale.exe) para onde quiser
+   — inclusive para outro computador Windows sem Python instalado — e
+   dê 2 cliques nele para abrir o sistema direto no navegador.
+
+------------------------------------------------------------
+OBSERVAÇÕES
+------------------------------------------------------------
+- O banco de dados (escala.db) fica salvo do lado do programa (ou do
+  .exe), então seus dados não se perdem entre uma abertura e outra.
+- Se a porta 5000 estiver ocupada, o sistema escolhe a próxima
+  automaticamente (5001, 5002...) sozinho.
+- Antivírus podem, às vezes, alertar sobre .exe gerados por PyInstaller
+  (falso positivo comum). Se acontecer, adicione uma exceção para o
+  LogiScale.exe.
