@@ -1,4 +1,6 @@
-flask 
-flask-cors 
-gunicorn 
+flask
+flask-cors
+gunicorn
 python-dotenv
+pandas
+openpyxl
