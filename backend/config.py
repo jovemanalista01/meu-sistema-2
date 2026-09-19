@@ -32,3 +32,12 @@ AUTH_REQUIRED = os.getenv("AUTH_REQUIRED", "false").strip().lower() in ("true", 
 PORT = int(os.getenv("PORT", "5000"))
 HOST = os.getenv("HOST", "0.0.0.0")
 DEBUG = os.getenv("DEBUG", "true").strip().lower() in ("true", "1", "yes")
+FIREBASE_CREDENTIALS_JSON = os.getenv("FIREBASE_CREDENTIALS_JSON", "")
+
+if FIREBASE_CREDENTIALS_JSON and not os.path.exists(FIREBASE_CREDENTIALS_PATH):
+    import json
+    import tempfile
+    _tmp = os.path.join(tempfile.gettempdir(), "firebase_credentials.json")
+    with open(_tmp, "w") as f:
+        f.write(FIREBASE_CREDENTIALS_JSON)
+    FIREBASE_CREDENTIALS_PATH = _tmp
